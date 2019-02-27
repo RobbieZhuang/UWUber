@@ -24,6 +24,7 @@ func handleRequests() {
 	nrouter.HandleFunc("/trips/{Id}", getTrip).Methods("GET")
 	nrouter.HandleFunc("/trips/{Id}", createTrip).Methods("POST")
 	nrouter.HandleFunc("/trips/{Id}", deleteTrip).Methods("DELETE")
+	nrouter.HandleFunc("/trips/update/{Id}", updateTrip).Methods("POST")
 	nrouter.HandleFunc("/trips", allTrips).Methods("GET")
 	nrouter.HandleFunc("/", homePage)
 	log.Fatal(http.ListenAndServe(":8081", nrouter))

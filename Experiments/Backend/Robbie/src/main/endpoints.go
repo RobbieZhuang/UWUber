@@ -102,6 +102,21 @@ func createTrip(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(allTrips)
 }
 
+func updateTrip(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	key := vars["Id"]
+
+	var trip Trip
+	_ = json.NewDecoder(r.Body).Decode(&trip)
+
+	updatedId, err := updateTripInDB(getIntFor(key), trip)
+	if err != nil {
+		log.Fatal("Could not update trip with tripId", key, err)
+	}
+	updatedTrip, _ := getTripForIDFromDB(updatedId)
+	json.NewEncoder(w).Encode(updatedTrip)
+}
+
 func deleteTrip(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	trips, err := deleteTripFromDB(getIntFor(params["Id"]))

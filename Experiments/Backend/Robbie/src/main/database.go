@@ -236,6 +236,24 @@ func addTripToDB( /*db *sql.DB,*/ trip Trip) (i int64, e error) {
 	return lastId, err
 }
 
+func updateTripInDB(id int, trip Trip) (i int, e error) {
+	db := StartDB()
+
+	stmt, err := db.Prepare("UPDATE trips SET pickupLongitude = ?, pickupLatitude = ?, dropoffLongitude = ?, dropoffLatitude = ?, pickupTime = ?, driverName = ? WHERE id= ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = stmt.Exec(trip.PickupLongitude, trip.PickupLatitude, trip.DropoffLongitude, trip.DropoffLatitude, trip.PickupTime, trip.DriverName, id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+
+	return id, err
+}
+
 func deleteTripFromDB(id int) (t Trips, e error) {
 	db := StartDB()
 
