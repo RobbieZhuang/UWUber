@@ -13,8 +13,9 @@ import (
 	"time"
 )
 
-const tableName string = "ride_posts"
-const awsRegion string = "us-east-1"
+const tableName string = "TripPosts"
+const awsRegion string = "us-east-2"
+const functionName string = "add_trip_post"
 
 var svc *dynamodb.DynamoDB
 
@@ -28,9 +29,9 @@ type Post struct {
 }
 
 type PostEntity struct {
-	PostId string `json:"id"`
-	Message string `json:"message"`
-	PostTime string `json:"postTime"`
+	PostId string `json:"PostId"`
+	Message string `json:"Message"`
+	PostTime string `json:"PostTime"`
 }
 
 func saveToDatabase(job PostEntity) {
@@ -91,9 +92,9 @@ func main() {
 	svc = dynamodb.New(session)
 
 	if err != nil {
-		log.Println("Error initiating dynamodb for get_fb_group_posts lambda function ", err.Error())
+		log.Println("Error initiating dynamodb for " + functionName + " lambda function ", err.Error())
 	} else {
-		log.Println("Successfully initiated dynamodb for get_fb_group_posts lambda function")
+		log.Println("Successfully initiated dynamodb for " + functionName + " lambda function")
 		lambda.Start(handle)
 	}
 }
