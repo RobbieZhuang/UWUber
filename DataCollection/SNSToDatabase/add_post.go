@@ -13,9 +13,11 @@ import (
 	"time"
 )
 
-const tableName string = "TripPosts"
-const awsRegion string = "us-east-2"
-const functionName string = "add_trip_post"
+const (
+	tableName string = "TripPosts"
+	awsRegion string = "us-east-2"
+	functionName string = "add_trip_post"
+)
 
 var svc *dynamodb.DynamoDB
 
