@@ -23,8 +23,7 @@ type ResponseBody struct {
 }
 
 type RequestBody struct {
-	UserId string `json:"userId"`
-	Url string `json:"url"`
+	GroupIds []string `json:"groupIds"`
 }
 
 type JobEntity struct {
@@ -65,7 +64,7 @@ func handle(ctx context.Context, name events.APIGatewayProxyRequest) (events.API
 	jsonParseError := json.Unmarshal([]byte(name.Body), &body)
 	if jsonParseError != nil {
 		log.Println(jsonParseError)
-		return events.APIGatewayProxyResponse{500, headers, "Internal Server Error", false}, nil
+		return events.APIGatewayProxyResponse{500, headers, nil, "Internal Server Error", false}, nil
 	}
 
 	log.Println("Called by: ", body.UserId)
@@ -78,17 +77,16 @@ func handle(ctx context.Context, name events.APIGatewayProxyRequest) (events.API
 	}
 
 	saveToDatabase(JobEntity{body.UserId, body.Url, int(time.Now().UnixNano() * int64(time.Nanosecond) / int64(time.Millisecond))})
-
-	return events.APIGatewayProxyResponse{code, headers, string(response), false}, nil
+	return events.APIGatewayProxyResponse{code, headers, nil,string(response), false}, nil
 }
 
 func main() {
-	session, err := session.NewSession(&aws.Config{
+	ses, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion)},
 	)
 
 	// Create DynamoDB client
-	svc = dynamodb.New(session)
+	svc = dynamodb.New(ses)
 
 	if err != nil {
 		log.Println("Error initiating dynamodb for get_fb_group_posts lambda function ", err.Error())

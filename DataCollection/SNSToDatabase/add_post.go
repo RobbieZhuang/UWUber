@@ -34,10 +34,10 @@ type PostEntity struct {
 	PostTime string `json:"PostTime"`
 }
 
-func saveToDatabase(job PostEntity) {
-	dbMap, err := dynamodbattribute.MarshalMap(job)
+func saveToDatabase(post PostEntity) {
+	dbMap, err := dynamodbattribute.MarshalMap(post)
 	if err != nil {
-		log.Println("Got error marshalling job entity:")
+		log.Println("Got error marshalling post entity:")
 		log.Println(err.Error())
 	}
 
@@ -51,7 +51,7 @@ func saveToDatabase(job PostEntity) {
 	if err != nil {
 		log.Println("Error calling put item ", err.Error())
 	} else {
-		log.Println("Successfully added ", job, " to table ", tableName)
+		log.Println("Successfully added ", post, " to table ", tableName)
 		log.Println("Database response: ", out)
 	}
 }
