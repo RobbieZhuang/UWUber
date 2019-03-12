@@ -5,21 +5,19 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/jinzhu/gorm"
 	"net/http"
-
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/graphql-go/graphql"
 )
 
 type userProfile struct {
-	ID   string `json:"id"`
+	gorm.Model
 	Name string `json:"name"`
 	Contact string `json:"contact"`
 }
 
-const fileName string = "data/user_data.json"
-
-var data map[string]user
+var db *gorm.DB
 
 /*
    Create User object type with fields "id" and "name" by using GraphQLObjectTypeConfig:
@@ -27,14 +25,17 @@ var data map[string]user
        - Fields: a map of fields by using GraphQLFields
    Setup type of field use GraphQLFieldConfig
 */
-var userType = graphql.NewObject(
+var userProfileType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "User",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
-				Type: graphql.String,
+				Type: graphql.Int,
 			},
 			"name": &graphql.Field{
+				Type: graphql.String,
+			},
+			"contact": &graphql.Field{
 				Type: graphql.String,
 			},
 		},
@@ -50,35 +51,33 @@ var userType = graphql.NewObject(
        - Args: arguments to query with current field
        - Resolve: function to query data using params from [Args] and return value with current type
 */
-var queryType = graphql.NewObject(
+var userProfileQuery = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
 			"user": &graphql.Field{
-				Type: userType,
+				Type: userProfileType,
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.String,
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					idQuery, isOK := p.Args["id"].(string)
-					if isOK {
-						return data[idQuery], nil
-					}
-					return nil, nil
+					var profile userProfile
+					db.First(&profile, p.Args["id"].(int))
+					return profile, nil
 				},
 			},
 		},
 	})
 
-var schema, _ = graphql.NewSchema(
+var userProfileSchema, _ = graphql.NewSchema(
 	graphql.SchemaConfig{
-		Query: queryType,
+		Query: userProfileQuery,
 	},
 )
 
-func executeQuery(query string, schema graphql.Schema) *graphql.Result {
+func executeUserProfileQuery(query string, schema graphql.Schema) *graphql.Result {
 	result := graphql.Do(graphql.Params{
 		Schema:        schema,
 		RequestString: query,
@@ -90,30 +89,23 @@ func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 }
 
 func main() {
-	_ = importJSONDataFromFile(fileName, &data)
+	db, err := gorm.Open("sqlite3", "sqlite/user_profile.db")
+	if err != nil {
+		panic("failed to connect database" + err.Error())
+	}
+	defer db.Close()
+
+	// Migrate the schema
+	db.AutoMigrate(&userProfile{})
+
+	db.Create(&userProfile{Name: "billy flex", Contact: "big@flex.com"})
 
 	http.HandleFunc("/graphql", func(w http.ResponseWriter, r *http.Request) {
-		result := executeQuery(r.URL.Query().Get("query"), schema)
+		result := executeUserProfileQuery(r.URL.Query().Get("query"), userProfileSchema)
 		json.NewEncoder(w).Encode(result)
 	})
 
 	fmt.Println("Now server is running on port 8080")
 	fmt.Println("Test with Get      : curl -g 'http://localhost:8080/graphql?query={user(id:\"1\"){name}}'")
 	http.ListenAndServe(":8080", nil)
-}
-
-//Helper function to import json from file to map
-func importJSONDataFromFile(fileName string, result interface{}) (isOK bool) {
-	isOK = true
-	content, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		fmt.Print("Error:", err)
-		isOK = false
-	}
-	err = json.Unmarshal(content, result)
-	if err != nil {
-		isOK = false
-		fmt.Print("Error:", err)
-	}
-	return
 }
