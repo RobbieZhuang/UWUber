@@ -10,13 +10,19 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"log"
+	"os"
+	"strconv"
 )
 
 const (
 	awsRegion string = "us-east-2"
 )
 
-var svc *dynamodb.DynamoDB
+var (
+	svc *dynamodb.DynamoDB
+	RunIntervalMinutes int64
+	FBLLAT string
+)
 
 type RequestBody struct {
 	GroupIds []string `json:"groupIds"`
@@ -28,6 +34,8 @@ func handle(ctx context.Context, event events.CloudWatchEvent) (events.APIGatewa
 	log.Println("context ", ctx)
 	headers := map[string]string{"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"}
 
+	loadEnvVars();
+
 	var body RequestBody
 	jsonParseError := json.Unmarshal([]byte(event.Detail), &body)
 	if jsonParseError != nil {
@@ -35,6 +43,7 @@ func handle(ctx context.Context, event events.CloudWatchEvent) (events.APIGatewa
 		return events.APIGatewayProxyResponse{500, headers, nil, "Internal Server Error", false}, nil
 	}
 
+	// TODO use AWS Lambda configuration params (esp. time)
 	count, err := getFBGroupPosts(body.GroupIds)
 
 	var (
@@ -56,8 +65,29 @@ func handle(ctx context.Context, event events.CloudWatchEvent) (events.APIGatewa
 
 func getFBGroupPosts(groupIds []string) (int, error) {
 	postsAdded := 0
-	
+	for groupId := range groupIds {
+		count, err := getFBGroupPost(groupIds[groupId])
+		if err != nil {
+			return postsAdded, err
+		}
+		postsAdded += count
+	}
 	return postsAdded, nil
+}
+
+func getFBGroupPost(groupId string) (int, error) {
+	postsAdded := 0
+	return postsAdded, nil
+}
+
+func loadEnvVars() {
+	FBLLAT = os.Getenv("FBLLAT")
+	hours, err := strconv.ParseInt(os.Getenv("RunIntervalMinutes"), 10, 32)
+	if err == nil {
+		RunIntervalMinutes = hours
+	} else {
+		log.Print(err)
+	}
 }
 
 func main() {
