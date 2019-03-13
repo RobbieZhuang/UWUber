@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"log"
-	"time"
 )
 
 const (
@@ -26,8 +25,9 @@ type ResponseBody struct {
 }
 
 type Post struct {
+	Id string `json:"id"`
 	Message string `json:"message"`
-	PostTime string `json:"postTime"`
+	UpdatedTime string `json:"updatedTime"`
 }
 
 type PostEntity struct {
@@ -80,7 +80,7 @@ func handle(ctx context.Context, snsEvent events.SNSEvent) (events.APIGatewayPro
 		code = 500
 	}
 
-	saveToDatabase(PostEntity{string(time.Now().UnixNano() * int64(time.Nanosecond) / int64(time.Millisecond)), post.Message, post.PostTime})
+	saveToDatabase(PostEntity{post.Id, post.Message, post.UpdatedTime})
 
 	return events.APIGatewayProxyResponse{code, headers, nil, string(response), false}, nil
 }
