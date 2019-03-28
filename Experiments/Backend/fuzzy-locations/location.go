@@ -98,6 +98,23 @@ func contains(s []string, e string) bool {
 	return false
 }
 
+type AddressData struct {
+	Lat  string `json:"lat"`
+	Lng  string `json:"lng"`
+	City string `json:"city"`
+}
+
+// Call this method to get AddressData object back!
+func getAddress(s string) AddressData {
+	couldNotParse := "CAN NOT PARSE, HUMAN VERIFICATION REQUIRED"
+	locID := getValidLocation(s)
+	if locID == "" {
+		return AddressData{Lat: couldNotParse, Lng: couldNotParse, City: couldNotParse}
+	}
+	long, lat, cityName := getPlaceDetails(locID)
+	return AddressData{Lat: fmt.Sprintf("%f", lat), Lng: fmt.Sprintf("%f", long), City: cityName}
+}
+
 func main() {
 	fmt.Println("FUZZILY SEARCH - Get lat/long & city name for fuzzily searched location")
 
@@ -107,4 +124,7 @@ func main() {
 	long, lat, cityName := getPlaceDetails(locID)
 
 	fmt.Printf("Long: %f\nLat: %f\nCity Name: %s\n", long, lat, cityName)
+
+	ad := getAddress(locName)
+	fmt.Printf("\nLong: %s\nLat: %s\nCity name: %s\n", ad.Lng, ad.Lat, ad.City)
 }
