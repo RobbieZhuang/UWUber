@@ -1,0 +1,25 @@
+syntax "proto3";
+
+#include "google/protobuf/timestamp.proto"
+
+package kek.reviews;
+
+message Review {
+	optional int32 reviewer_username = 1;
+
+	optional int32 rating = 2;  // Rating out of 5
+	optional string reviewer_message = 10;
+
+	optional google.protobuf.Timestamp review_time = 4;
+}
+
+message NewReview {
+	optional int32 reviewer_user_id = 1;
+	optional int32 reviewer_username = 2;  // Used if id is not known
+
+	optional int32 reviewee_username = 3;
+	optional int32 reviewee_username = 4;  // Used if id is not known
+
+	optional int32 rating = 5;  // Rating out of 5
+	optional string reviewer_message = 10;
+}

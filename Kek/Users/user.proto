@@ -1,0 +1,16 @@
+syntax "proto3";
+
+#include "google/protobuf/timestamp.proto"
+
+package kek.users;
+
+message User {
+	optional string username = 1;
+	optional int32 user_id = 10;
+
+	optional string first_name = 2;
+	optional string middle_name = 3;
+	optional string last_name = 4;
+
+	optional google.protobuf.Timestamp account_creation_time = 5;
+}
