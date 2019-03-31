@@ -57,6 +57,13 @@ type Driver struct {
 	FBContact  string `json:"fbContact"`
 }
 
+type Post struct {
+	Id          string `json:"id"`
+	Username    string `json:”username”`
+	Message     string `json:"message"`
+	UpdatedTime string `json:"updatedTime"`
+}
+
 type Trip struct {
 	PostInformation *Post        `json:"postInformation"`
 	PickupLocation  *AddressData `json:"pickupLocation"`
@@ -145,11 +152,11 @@ type TimeData struct {
 }
 
 func main() {
-	sampleJson1 := []byte(`{"id":"id1", "username":"Brendan Zhang", "message":"Looking for ride to Union/Finch from Waterloo bk on Sunday (10th) after 4pm.", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
-	sampleJson2 := []byte(`{"id":"id2", "username":"Daniell Yang", "message":"Looking for a ride from Brampton to Waterloo on 10th March (Sunday).", "updatedTime":"2018-02-31T05:33:31+0000"}`)
+	//sampleJson1 := []byte(`{"id":"id1", "username":"Brendan Zhang", "message":"Looking for ride to Union/Finch from Waterloo bk on Sunday (10th) after 4pm.", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+	//sampleJson2 := []byte(`{"id":"id2", "username":"Daniell Yang", "message":"Looking for a ride from Brampton to Waterloo on 10th March (Sunday).", "updatedTime":"2018-02-31T05:33:31+0000"}`)
 	sampleJson3 := []byte(`{"id":"id3", "username":"Bimesh DeSilva", "message":"Driving London -> Waterloo @ 1 pm on Sunday March 10th, $20", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
-	sampleJson4 := []byte(`{"id":"id4", "username":"Max Gao", "message":"driving richmond hill freshco plaza to waterloo bk plaza at 1pm sunday march 10, no middle seat, taking 407, $20 a seat", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
-	shitpost := []byte(`{"id":"id5", "username":"shitposter", "message":"Shitpost", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+	//sampleJson4 := []byte(`{"id":"id4", "username":"Max Gao", "message":"driving richmond hill freshco plaza to waterloo bk plaza at 1pm sunday march 10, no middle seat, taking 407, $20 a seat", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+	//shitpost := []byte(`{"id":"id5", "username":"shitposter", "message":"Shitpost", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 
 	fmt.Println("FUZZILY SEARCH - Get lat/long & city name for fuzzily searched location")
 
@@ -162,4 +169,6 @@ func main() {
 
 	ad := getAddress(locName)
 	fmt.Printf("\nLong: %s\nLat: %s\nCity name: %s\n", ad.Lng, ad.Lat, ad.City)
+
+	parseJson(sampleJson3)
 }
