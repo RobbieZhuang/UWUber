@@ -45,6 +45,29 @@ type LongLat struct {
 	Lng float64 `json:"lng"`
 }
 
+type Time struct {
+	ExactTime  string `json:"exactTime"`
+	TimeString string `json:"timeString"`
+	Date       string `json:"date"`
+}
+
+type Driver struct {
+	Name       string `json:"name"`
+	ProfileURL string `json:"profileURL"`
+	FBContact  string `json:"fbContact"`
+}
+
+type Trip struct {
+	PostInformation *Post        `json:"postInformation"`
+	PickupLocation  *AddressData `json:"pickupLocation"`
+	DropoffLocation *AddressData `json:"dropoffLocation"`
+	PickupTime      *Time        `json:"pickupTime"`
+	Driver          *Driver      `json:"driver"`
+	FBPosting       string       `json:"fbPosting"`
+	SpotsAvailable  string       `json:"spotsAvailable"`
+	Price           string       `json:"price"`
+}
+
 // Sauga/Sq1 works on google maps, but not our places endpoint? Try Waterloo BK
 // https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=Sauga+Sq1&key=AIzaSyDe9KBNpY2cZ8ghI-hTNcRoXHOVDYqQdvA
 
@@ -115,7 +138,19 @@ func getAddress(s string) AddressData {
 	return AddressData{Lat: fmt.Sprintf("%f", lat), Lng: fmt.Sprintf("%f", long), City: cityName}
 }
 
+type TimeData struct {
+	TimePrecise     string `json:"timePrecise"`
+	TimeDescription string `json:"timeDescription"`
+	Date            string `json:"date"`
+}
+
 func main() {
+	sampleJson1 := []byte(`{"id":"id1", "username":"Brendan Zhang", "message":"Looking for ride to Union/Finch from Waterloo bk on Sunday (10th) after 4pm.", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+	sampleJson2 := []byte(`{"id":"id2", "username":"Daniell Yang", "message":"Looking for a ride from Brampton to Waterloo on 10th March (Sunday).", "updatedTime":"2018-02-31T05:33:31+0000"}`)
+	sampleJson3 := []byte(`{"id":"id3", "username":"Bimesh DeSilva", "message":"Driving London -> Waterloo @ 1 pm on Sunday March 10th, $20", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+	sampleJson4 := []byte(`{"id":"id4", "username":"Max Gao", "message":"driving richmond hill freshco plaza to waterloo bk plaza at 1pm sunday march 10, no middle seat, taking 407, $20 a seat", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+	shitpost := []byte(`{"id":"id5", "username":"shitposter", "message":"Shitpost", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+
 	fmt.Println("FUZZILY SEARCH - Get lat/long & city name for fuzzily searched location")
 
 	locName := "Waterloo BK"
