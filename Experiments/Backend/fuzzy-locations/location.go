@@ -10,6 +10,26 @@ import (
 
 const token = "AIzaSyDe9KBNpY2cZ8ghI-hTNcRoXHOVDYqQdvA"
 
+var locationsMap = map[string]string{
+	"TDOT":          "Toronto",
+	"TORONTO":       "Toronto",
+	"RH":            "Richmond Hill",
+	"RICHMOND HILL": "Richmond Hill",
+	"MARKHAM":       "Richmond Hill",
+	"LOO":           "Waterloo",
+	"WATERLOO":      "Waterloo",
+	"BK PLAZA":      "Waterloo",
+	"BURGER KING":   "Waterloo",
+	"UW":            "Waterloo",
+	"STC":           "Scarborough",
+	"SCARBOROUGH":   "Scarborough",
+	"BRAMPTON":      "Brampton",
+	"LONDON":        "London",
+	"WESTERN":       "London",
+	"PM":            "Pacific Mall",
+	"PACIFIC MALL":  "Pacific Mall",
+	"FINCH":         "Finch Station"}
+
 type LocationResponse struct {
 	Predictions     []*Predictions `json:"predictions"`
 	PickupLongitude int            `json:"pickupLongitude"`
