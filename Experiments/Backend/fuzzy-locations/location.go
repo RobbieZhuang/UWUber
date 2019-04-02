@@ -30,41 +30,6 @@ var locationsMap = map[string]string{
 	"PACIFIC MALL":  "Pacific Mall",
 	"FINCH":         "Finch Station"}
 
-type LocationResponse struct {
-	Predictions     []*Predictions `json:"predictions"`
-	PickupLongitude int            `json:"pickupLongitude"`
-}
-
-type Predictions struct {
-	Description string `json:"description"`
-	ID          string `json:"id"`
-	PlaceID     string `json:"place_id"`
-}
-
-type ResultResult struct {
-	Result *PlaceResponseResult `json:"result"`
-}
-
-type PlaceResponseResult struct {
-	AddressComponents []*AddressComponents `json:"address_components"`
-	Geometry          *Geometry            `json:"geometry"`
-}
-
-type AddressComponents struct {
-	LongName  string   `json:"long_name"`
-	ShortName string   `json:"short_name"`
-	Types     []string `json:"types"`
-}
-
-type Geometry struct {
-	Location *LongLat `json:"location"`
-}
-
-type LongLat struct {
-	Lat float64 `json:"lat"`
-	Lng float64 `json:"lng"`
-}
-
 type Time struct {
 	ExactTime  string `json:"exactTime"`
 	TimeString string `json:"timeString"`
@@ -95,48 +60,162 @@ type Trip struct {
 	Price           string       `json:"price"`
 }
 
-// Sauga/Sq1 works on google maps, but not our places endpoint? Try Waterloo BK
-// https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=Sauga+Sq1&key=AIzaSyDe9KBNpY2cZ8ghI-hTNcRoXHOVDYqQdvA
+// MARK: Location Parsing
 
-func getValidLocation(str string) (id string) {
-	resp, _ := resty.R().
+// Google Places API Struct
+type LocationResponse struct {
+	Predictions     []*Predictions `json:"predictions"`
+	PickupLongitude int            `json:"pickupLongitude"`
+}
+
+type Predictions struct {
+	Description string `json:"description"`
+	ID          string `json:"id"`
+	PlaceID     string `json:"place_id"`
+}
+
+type ResultResult struct {
+	Result *PlaceResponseResult `json:"result"`
+}
+
+type PlaceResponseResult struct {
+	AddressComponents []*AddressComponents `json:"address_components"`
+	Geometry          *Geometry            `json:"geometry"`
+	FormattedAddress  string               `json:"formatted_address"`
+}
+
+type AddressComponents struct {
+	LongName  string   `json:"long_name"`
+	ShortName string   `json:"short_name"`
+	Types     []string `json:"types"`
+}
+
+type Geometry struct {
+	Location *LongLat `json:"location"`
+}
+
+type LongLat struct {
+	Lat float64 `json:"lat"`
+	Lng float64 `json:"lng"`
+}
+
+// Location Parsing
+type Error struct {
+	HasErr bool
+	ErrMsg string
+}
+
+type LocationID struct {
+	Id  string
+	Err Error
+}
+
+type AddressDataResponse struct {
+	Lat      float64
+	Lng      float64
+	City     string
+	LongName string
+	Err      Error
+}
+
+func getLocationID(str string) (locationID LocationID) {
+
+	// Sauga/Sq1 works on google maps, but not our places endpoint? Try Waterloo BK
+	// https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=Sauga+Sq1&key=AIzaSyDe9KBNpY2cZ8ghI-hTNcRoXHOVDYqQdvA
+
+	resp, err := resty.R().
 		SetQueryParams(map[string]string{
 			"key":   token,
 			"input": url.QueryEscape(str + " Canada"),
 		}).
 		Get("https://maps.googleapis.com/maps/api/place/queryautocomplete/json")
 
+	if err != nil {
+		return LocationID{
+			Id: "",
+			Err: Error{
+				HasErr: true,
+				ErrMsg: "Could not get ID for place.",
+			},
+		}
+	}
+
 	var locResp LocationResponse
 
 	_ = json.Unmarshal(resp.Body(), &locResp)
 
 	if len(locResp.Predictions) > 0 {
-		return locResp.Predictions[0].PlaceID
-	} else {
-		fmt.Printf("\nno predictions found")
-		return ""
+		return LocationID{
+			Id: locResp.Predictions[0].PlaceID,
+			Err: Error{
+				HasErr: false,
+				ErrMsg: "",
+			},
+		}
+	}
+	return LocationID{
+		Id: "",
+		Err: Error{
+			HasErr: true,
+			ErrMsg: "Could not parse location ID.",
+		},
 	}
 }
 
-func getPlaceDetails(placeID string) (long float64, lat float64, city string) {
+func getPlaceDetails(locationID LocationID) (addressDataResponse AddressDataResponse) {
+	if locationID.Err.HasErr {
+		return AddressDataResponse{
+			Lat:      0,
+			Lng:      0,
+			City:     "",
+			LongName: "",
+			Err: Error{
+				HasErr: true,
+				ErrMsg: "Invalid placeID, could not get address data.",
+			},
+		}
+	}
+
 	resp, _ := resty.R().SetQueryParams(map[string]string{
-		"placeid": placeID,
+		"placeid": locationID.Id,
 		"key":     token,
 	}).Get("https://maps.googleapis.com/maps/api/place/details/json")
 
-	var coords ResultResult
+	var placeDetails ResultResult
 
-	_ = json.Unmarshal(resp.Body(), &coords)
+	err := json.Unmarshal(resp.Body(), &placeDetails)
 
+	if err != nil {
+		return AddressDataResponse{
+			Lat:      0,
+			Lng:      0,
+			City:     "",
+			LongName: "",
+			Err: Error{
+				HasErr: true,
+				ErrMsg: "Invalid placeID, could not get address data.",
+			},
+		}
+	}
 	var countryName = ""
 
-	for _, addressComp := range coords.Result.AddressComponents {
+	for _, addressComp := range placeDetails.Result.AddressComponents {
 		if contains(addressComp.Types, "locality") || contains(addressComp.Types, "political") {
 			countryName = addressComp.ShortName
 			break
 		}
 	}
-	return coords.Result.Geometry.Location.Lng, coords.Result.Geometry.Location.Lat, countryName
+
+	return AddressDataResponse{
+		Lat:      placeDetails.Result.Geometry.Location.Lat,
+		Lng:      placeDetails.Result.Geometry.Location.Lng,
+		City:     countryName,
+		LongName: placeDetails.Result.FormattedAddress,
+		Err: Error{
+			HasErr: false,
+			ErrMsg: "",
+		},
+	}
 }
 
 func contains(s []string, e string) bool {
@@ -149,21 +228,34 @@ func contains(s []string, e string) bool {
 }
 
 type AddressData struct {
-	Lat  string `json:"lat"`
-	Lng  string `json:"lng"`
-	City string `json:"city"`
+	Lat              string `json:"lat"`
+	Lng              string `json:"lng"`
+	City             string `json:"city"`
+	FormattedAddress string `json:"formattedAddress"`
 }
 
 // Call this method to get AddressData object back!
-func getAddress(s string) AddressData {
+func getAddressObject(s string) AddressData {
 	couldNotParse := "CAN NOT PARSE, HUMAN VERIFICATION REQUIRED"
-	locID := getValidLocation(s)
-	if locID == "" {
-		return AddressData{Lat: couldNotParse, Lng: couldNotParse, City: couldNotParse}
+	locID := getLocationID(s)
+	addressData := getPlaceDetails(locID)
+	if locID.Err.HasErr || addressData.Err.HasErr {
+		return AddressData{
+			Lat:              couldNotParse,
+			Lng:              couldNotParse,
+			City:             couldNotParse,
+			FormattedAddress: couldNotParse,
+		}
 	}
-	long, lat, cityName := getPlaceDetails(locID)
-	return AddressData{Lat: fmt.Sprintf("%f", lat), Lng: fmt.Sprintf("%f", long), City: cityName}
+	return AddressData{
+		Lat:              fmt.Sprintf("%f", addressData.Lat),
+		Lng:              fmt.Sprintf("%f", addressData.Lng),
+		City:             addressData.City,
+		FormattedAddress: addressData.LongName,
+	}
 }
+
+// MARK: Time Parsing
 
 type TimeData struct {
 	TimePrecise     string `json:"timePrecise"`
@@ -174,21 +266,14 @@ type TimeData struct {
 func main() {
 	//sampleJson1 := []byte(`{"id":"id1", "username":"Brendan Zhang", "message":"Looking for ride to Union/Finch from Waterloo bk on Sunday (10th) after 4pm.", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 	//sampleJson2 := []byte(`{"id":"id2", "username":"Daniell Yang", "message":"Looking for a ride from Brampton to Waterloo on 10th March (Sunday).", "updatedTime":"2018-02-31T05:33:31+0000"}`)
-	sampleJson3 := []byte(`{"id":"id3", "username":"Bimesh DeSilva", "message":"Driving London -> Waterloo @ 1 pm on Sunday March 10th, $20", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+	// sampleJson3 := []byte(`{"id":"id3", "username":"Bimesh DeSilva", "message":"Driving London -> Waterloo @ 1 pm on Sunday March 10th, $20", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 	//sampleJson4 := []byte(`{"id":"id4", "username":"Max Gao", "message":"driving richmond hill freshco plaza to waterloo bk plaza at 1pm sunday march 10, no middle seat, taking 407, $20 a seat", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 	//shitpost := []byte(`{"id":"id5", "username":"shitposter", "message":"Shitpost", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 
-	fmt.Println("FUZZILY SEARCH - Get lat/long & city name for fuzzily searched location")
-
 	locName := "Waterloo BK"
 
-	locID := getValidLocation(locName)
-	long, lat, cityName := getPlaceDetails(locID)
+	ad := getAddressObject(locName)
+	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s", ad.Lng, ad.Lat, ad.City, ad.FormattedAddress)
 
-	fmt.Printf("Long: %f\nLat: %f\nCity Name: %s\n", long, lat, cityName)
-
-	ad := getAddress(locName)
-	fmt.Printf("\nLong: %s\nLat: %s\nCity name: %s\n", ad.Lng, ad.Lat, ad.City)
-
-	parseJson(sampleJson3)
+	// parseJson(sampleJson3)
 }
