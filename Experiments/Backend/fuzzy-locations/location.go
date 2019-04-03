@@ -31,8 +31,8 @@ var locationsMap = map[string]string{
 	"FINCH":         "Finch Station"}
 
 type Time struct {
-	ExactTime  string `json:"exactTime"`
-	TimeString string `json:"timeString"`
+	TimePrecise  string `json:"timePrecise"`
+	TimeDescription string `json:"timeDescription"`
 	Date       string `json:"date"`
 }
 
@@ -277,7 +277,7 @@ func contains(s []string, e string) bool {
 func main() {
 	//sampleJson1 := []byte(`{"id":"id1", "username":"Brendan Zhang", "message":"Looking for ride to Union/Finch from Waterloo bk on Sunday (10th) after 4pm.", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 	//sampleJson2 := []byte(`{"id":"id2", "username":"Daniell Yang", "message":"Looking for a ride from Brampton to Waterloo on 10th March (Sunday).", "updatedTime":"2018-02-31T05:33:31+0000"}`)
-	// sampleJson3 := []byte(`{"id":"id3", "username":"Bimesh DeSilva", "message":"Driving London -> Waterloo @ 1 pm on Sunday March 10th, $20", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+	 sampleJson3 := []byte(`{"id":"id3", "username":"Bimesh DeSilva", "message":"Driving London -> Waterloo @ 1 pm on Sunday March 10th, $20", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 	//sampleJson4 := []byte(`{"id":"id4", "username":"Max Gao", "message":"driving richmond hill freshco plaza to waterloo bk plaza at 1pm sunday march 10, no middle seat, taking 407, $20 a seat", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 	//shitpost := []byte(`{"id":"id5", "username":"shitposter", "message":"Shitpost", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 
@@ -294,5 +294,5 @@ func main() {
 	tm := getTimeObject(time, timeContext)
 	fmt.Printf("TimePrecise: %s\nTimeDescription: %s\nDate: %s\n", tm.TimePrecise, tm.TimeDescription, tm.Date)
 
-	// parseJson(sampleJson3)
+	 parseJson(sampleJson3)
 }
