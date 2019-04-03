@@ -218,15 +218,6 @@ func getPlaceDetails(locationID LocationID) (addressDataResponse AddressDataResp
 	}
 }
 
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
 type AddressData struct {
 	Lat              string `json:"lat"`
 	Lng              string `json:"lng"`
@@ -263,6 +254,26 @@ type TimeData struct {
 	Date            string `json:"date"`
 }
 
+func getTimeObject(s string, postTime string) TimeData {
+	couldNotParse := "CAN NOT PARSE, HUMAN VERIFICATION REQUIRED"
+	return TimeData{
+		TimePrecise:     couldNotParse,
+		TimeDescription: couldNotParse,
+		Date:            couldNotParse,
+	}
+}
+
+// MARK: Helper Functions
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	//sampleJson1 := []byte(`{"id":"id1", "username":"Brendan Zhang", "message":"Looking for ride to Union/Finch from Waterloo bk on Sunday (10th) after 4pm.", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 	//sampleJson2 := []byte(`{"id":"id2", "username":"Daniell Yang", "message":"Looking for a ride from Brampton to Waterloo on 10th March (Sunday).", "updatedTime":"2018-02-31T05:33:31+0000"}`)
@@ -272,8 +283,16 @@ func main() {
 
 	locName := "Waterloo BK"
 
+	time := "This afternoon"
+	timeContext := "04/13/2019"
+
 	ad := getAddressObject(locName)
-	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s", ad.Lng, ad.Lat, ad.City, ad.FormattedAddress)
+	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s\n", ad.Lng, ad.Lat, ad.City, ad.FormattedAddress)
+
+	fmt.Println()
+
+	tm := getTimeObject(time, timeContext)
+	fmt.Printf("TimePrecise: %s\nTimeDescription: %s\nDate: %s\n", tm.TimePrecise, tm.TimeDescription, tm.Date)
 
 	// parseJson(sampleJson3)
 }
