@@ -45,7 +45,11 @@ func createTrip(id string, username string, message string, updatedTime string, 
 	dropoffLocation := getAddressObject(locationsMap[dropoffSegment])
 	trip.DropoffLocation = &dropoffLocation
 	trip.Driver = createDriver(id, username)
+	timeData := getTimeObject(message, updatedTime)
+	trip.PickupTime = &timeData
 	trip.FBPosting = message
+
+	//populate db
 }
 
 func createTripRequest(id string, username string, message string, updatedTime string) {

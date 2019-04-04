@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-
+	"strings"
 	"gopkg.in/resty.v1"
+	"regexp"
 )
 
 const token = "AIzaSyDe9KBNpY2cZ8ghI-hTNcRoXHOVDYqQdvA"
@@ -30,11 +31,21 @@ var locationsMap = map[string]string{
 	"PACIFIC MALL":  "Pacific Mall",
 	"FINCH":         "Finch Station"}
 
-type Time struct {
-	TimePrecise  string `json:"timePrecise"`
-	TimeDescription string `json:"timeDescription"`
-	Date       string `json:"date"`
-}
+	
+var monthMap = map[string]string{
+	"JAN" : "01",
+	"FEB" : "02",
+	"MAR" : "03",
+	"APR" : "04",
+	"MAY" : "05",
+	"JUN" : "06",
+	"JUL" : "07",
+	"AUG" : "08",
+	"SEPT" : "09",
+	"OCT" : "10",
+	"NOV" : "11",
+	"DEC" : "12"}
+
 
 type Driver struct {
 	Name       string `json:"name"`
@@ -53,7 +64,7 @@ type Trip struct {
 	PostInformation *Post        `json:"postInformation"`
 	PickupLocation  *AddressData `json:"pickupLocation"`
 	DropoffLocation *AddressData `json:"dropoffLocation"`
-	PickupTime      *Time        `json:"pickupTime"`
+	PickupTime      *TimeData        `json:"pickupTime"`
 	Driver          *Driver      `json:"driver"`
 	FBPosting       string       `json:"fbPosting"`
 	SpotsAvailable  string       `json:"spotsAvailable"`
@@ -254,12 +265,48 @@ type TimeData struct {
 	Date            string `json:"date"`
 }
 
-func getTimeObject(s string, postTime string) TimeData {
+func getTimeObject(message string, postTime string) TimeData {
+	// this code is garbage sorry lmao
 	couldNotParse := "CAN NOT PARSE, HUMAN VERIFICATION REQUIRED"
+
+	currDate := postTime[0:10]
+	upperMessage := strings.ToUpper(message)
+	dateFromPost := ""
+	timePrecise := ""
+	timeDescription := ""
+	for key, value := range monthMap {
+		if strings.Contains(upperMessage, key) {
+			pattern, _ := regexp.Compile("[0-9]+")
+			day := pattern.FindString(upperMessage[strings.Index(upperMessage,key):])
+			if len(day) != 2 {
+				day = "0"+day
+			}
+			dateFromPost = currDate[0:4] + "-" + value + "-" + day
+		}
+	}
+
+	pattern, _ := regexp.Compile("[0-9]+.*?(AM|PM)")
+	allFoundTime := pattern.FindAllString(upperMessage, 2)	
+	if len(allFoundTime) == 2 {
+		timeDescription = allFoundTime[0] + " to " + allFoundTime[1]
+	} else if len(allFoundTime) == 1 {
+		timePrecise = allFoundTime[0]
+	}
+
+	if len(dateFromPost) == 0 {
+		dateFromPost = couldNotParse
+	} 
+	if len(timePrecise) == 0 {
+		timePrecise = couldNotParse
+	}
+	if len(timeDescription) == 0 {
+		timeDescription = couldNotParse
+	}
+	
 	return TimeData{
-		TimePrecise:     couldNotParse,
-		TimeDescription: couldNotParse,
-		Date:            couldNotParse,
+		TimePrecise:     timePrecise,
+		TimeDescription: timeDescription,
+		Date:            dateFromPost,
 	}
 }
 
