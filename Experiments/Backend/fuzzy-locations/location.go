@@ -64,7 +64,7 @@ type Trip struct {
 	PostInformation *Post        `json:"postInformation"`
 	PickupLocation  *AddressData `json:"pickupLocation"`
 	DropoffLocation *AddressData `json:"dropoffLocation"`
-	PickupTime      *TimeData        `json:"pickupTime"`
+	PickupTime      *TimeData    `json:"pickupTime"`
 	Driver          *Driver      `json:"driver"`
 	FBPosting       string       `json:"fbPosting"`
 	SpotsAvailable  string       `json:"spotsAvailable"`
@@ -261,7 +261,7 @@ func getAddressObject(s string) AddressData {
 
 type TimeData struct {
 	TimePrecise     string `json:"timePrecise"`
-	TimeDescription string `json:"timeDescription"`
+	TimeRange 		string `json:"timeRange"`
 	Date            string `json:"date"`
 }
 
@@ -305,7 +305,7 @@ func getTimeObject(message string, postTime string) TimeData {
 	
 	return TimeData{
 		TimePrecise:     timePrecise,
-		TimeDescription: timeDescription,
+		TimeRange: 		 timeDescription,
 		Date:            dateFromPost,
 	}
 }
@@ -339,7 +339,8 @@ func main() {
 	fmt.Println()
 
 	tm := getTimeObject(time, timeContext)
-	fmt.Printf("TimePrecise: %s\nTimeDescription: %s\nDate: %s\n", tm.TimePrecise, tm.TimeDescription, tm.Date)
+	fmt.Printf("TimePrecise: %s\nTimeRange: %s\nDate: %s\n", tm.TimePrecise, tm.TimeRange, tm.Date)
 
-	 parseJson(sampleJson3)
+	fmt.Printf("\nResults from parsing:\n")
+	parseJson(sampleJson3)
 }

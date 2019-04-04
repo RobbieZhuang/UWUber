@@ -5,6 +5,7 @@ import (
 	"log"
 	"regexp"
 	"strings"
+	"fmt"
 )
 
 func createShitPost(id string, username string, message string, updatedTime string) {
@@ -40,14 +41,23 @@ func createTrip(id string, username string, message string, updatedTime string, 
 			break
 		}
 	}
-	pickupLocation := getAddressObject(locationsMap[pickupSegment])
+	pickupLocation := getAddressObject(pickupCity)
 	trip.PickupLocation = &pickupLocation
-	dropoffLocation := getAddressObject(locationsMap[dropoffSegment])
+	dropoffLocation := getAddressObject(dropoffCity)
 	trip.DropoffLocation = &dropoffLocation
 	trip.Driver = createDriver(id, username)
 	timeData := getTimeObject(message, updatedTime)
 	trip.PickupTime = &timeData
 	trip.FBPosting = message
+	trip.SpotsAvailable = ""
+	trip.Price = ""
+
+	fmt.Printf("Pickup Location\n")
+	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s\n", trip.PickupLocation.Lng, trip.PickupLocation.Lat, trip.PickupLocation.City, trip.PickupLocation.FormattedAddress)	
+	fmt.Printf("Dropoff Location\n")
+	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s\n", trip.DropoffLocation.Lng, trip.DropoffLocation.Lat, trip.DropoffLocation.City, trip.DropoffLocation.FormattedAddress)	
+	fmt.Printf("Approximate Time Info\n")
+	fmt.Printf("TimePrecise: %s\nTimeRange: %s\nDate: %s\n", trip.PickupTime.TimePrecise, trip.PickupTime.TimeRange, trip.PickupTime.Date)
 
 	//populate db
 }
