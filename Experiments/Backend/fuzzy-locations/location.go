@@ -61,7 +61,7 @@ type Post struct {
 }
 
 type Trip struct {
-	TripId			string 		 `json:"tripId"`
+	TripID			string 		 `json:"TripID"`
 	PostInformation *Post        `json:"postInformation"`
 	PickupLocation  *AddressData `json:"pickupLocation"`
 	DropoffLocation *AddressData `json:"dropoffLocation"`

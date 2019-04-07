@@ -1,19 +1,19 @@
 package main
 
 import (
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"log"
-	"github.com/aws/aws-sdk-go/aws"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 var svc *dynamodb.DynamoDB
 
 const (
-	tableName string = "Trips"
-	awsRegion string = "us-east-2"
+	tableName    string = "Trips"
+	awsRegion    string = "us-east-2"
 	functionName string = "add_trip"
 )
 
@@ -21,7 +21,7 @@ func persistToDB(trip Trip) {
 	session, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion)},
 	)
-	
+
 	svc = dynamodb.New(session)
 	dbMap, err := dynamodbattribute.MarshalMap(trip)
 	if err != nil {
@@ -30,7 +30,7 @@ func persistToDB(trip Trip) {
 	}
 
 	dbInput := &dynamodb.PutItemInput{
-		Item: dbMap,
+		Item:      dbMap,
 		TableName: aws.String(tableName),
 	}
 

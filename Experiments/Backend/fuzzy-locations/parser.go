@@ -1,17 +1,17 @@
 package main
 
 import (
+	"crypto/rand"
 	"encoding/json"
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
-	"fmt"
-	"crypto/rand"
 )
 
-func createUniqueTripId() (uniqueId string){
+func createUniqueTripId() (uniqueId string) {
 	b := make([]byte, 16)
-	_, err:= rand.Read(b)
+	_, err := rand.Read(b)
 	if err != nil {
 		log.Println("Error: ", err)
 	}
@@ -53,7 +53,7 @@ func createTrip(id string, username string, message string, updatedTime string, 
 			break
 		}
 	}
-	trip.TripId = createUniqueTripId()
+	trip.TripID = createUniqueTripId()
 	pickupLocation := getAddressObject(pickupCity)
 	trip.PickupLocation = &pickupLocation
 	dropoffLocation := getAddressObject(dropoffCity)
@@ -64,13 +64,13 @@ func createTrip(id string, username string, message string, updatedTime string, 
 	trip.FBPosting = message
 	trip.SpotsAvailable = ""
 	trip.Price = ""
-	
+
 	persistToDB(trip)
-	
+
 	fmt.Printf("Pickup Location\n")
-	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s\n", trip.PickupLocation.Lng, trip.PickupLocation.Lat, trip.PickupLocation.City, trip.PickupLocation.FormattedAddress)	
+	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s\n", trip.PickupLocation.Lng, trip.PickupLocation.Lat, trip.PickupLocation.City, trip.PickupLocation.FormattedAddress)
 	fmt.Printf("Dropoff Location\n")
-	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s\n", trip.DropoffLocation.Lng, trip.DropoffLocation.Lat, trip.DropoffLocation.City, trip.DropoffLocation.FormattedAddress)	
+	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s\n", trip.DropoffLocation.Lng, trip.DropoffLocation.Lat, trip.DropoffLocation.City, trip.DropoffLocation.FormattedAddress)
 	fmt.Printf("Approximate Time Info\n")
 	fmt.Printf("TimePrecise: %s\nTimeRange: %s\nDate: %s\n", trip.PickupTime.TimePrecise, trip.PickupTime.TimeRange, trip.PickupTime.Date)
 
