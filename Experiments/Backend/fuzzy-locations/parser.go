@@ -6,7 +6,19 @@ import (
 	"regexp"
 	"strings"
 	"fmt"
+	"crypto/rand"
 )
+
+func createUniqueTripId() (uniqueId string){
+	b := make([]byte, 16)
+	_, err:= rand.Read(b)
+	if err != nil {
+		log.Println("Error: ", err)
+	}
+
+	uniqueId = fmt.Sprintf("%X-%X-%X-%X-%X", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+	return
+}
 
 func createShitPost(id string, username string, message string, updatedTime string) {
 	//couldNotParse := "CAN NOT PARSE, HUMAN VERIFICATION REQUIRED"
@@ -41,6 +53,7 @@ func createTrip(id string, username string, message string, updatedTime string, 
 			break
 		}
 	}
+	trip.TripId = createUniqueTripId()
 	pickupLocation := getAddressObject(pickupCity)
 	trip.PickupLocation = &pickupLocation
 	dropoffLocation := getAddressObject(dropoffCity)
@@ -51,7 +64,9 @@ func createTrip(id string, username string, message string, updatedTime string, 
 	trip.FBPosting = message
 	trip.SpotsAvailable = ""
 	trip.Price = ""
-
+	
+	persistToDB(trip)
+	
 	fmt.Printf("Pickup Location\n")
 	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s\n", trip.PickupLocation.Lng, trip.PickupLocation.Lat, trip.PickupLocation.City, trip.PickupLocation.FormattedAddress)	
 	fmt.Printf("Dropoff Location\n")
