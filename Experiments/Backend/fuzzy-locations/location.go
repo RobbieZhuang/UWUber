@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"strings"
-	"gopkg.in/resty.v1"
 	"regexp"
+	"strings"
+
+	"gopkg.in/resty.v1"
 )
 
 const token = "AIzaSyDe9KBNpY2cZ8ghI-hTNcRoXHOVDYqQdvA"
@@ -31,21 +32,19 @@ var locationsMap = map[string]string{
 	"PACIFIC MALL":  "Pacific Mall",
 	"FINCH":         "Finch Station"}
 
-	
 var monthMap = map[string]string{
-	"JAN" : "01",
-	"FEB" : "02",
-	"MAR" : "03",
-	"APR" : "04",
-	"MAY" : "05",
-	"JUN" : "06",
-	"JUL" : "07",
-	"AUG" : "08",
-	"SEPT" : "09",
-	"OCT" : "10",
-	"NOV" : "11",
-	"DEC" : "12"}
-
+	"JAN":  "01",
+	"FEB":  "02",
+	"MAR":  "03",
+	"APR":  "04",
+	"MAY":  "05",
+	"JUN":  "06",
+	"JUL":  "07",
+	"AUG":  "08",
+	"SEPT": "09",
+	"OCT":  "10",
+	"NOV":  "11",
+	"DEC":  "12"}
 
 type Driver struct {
 	Name       string `json:"name"`
@@ -61,7 +60,7 @@ type Post struct {
 }
 
 type Trip struct {
-	TripID			string 		 `json:"TripID"`
+	TripID          string       `json:"TripID"`
 	PostInformation *Post        `json:"postInformation"`
 	PickupLocation  *AddressData `json:"pickupLocation"`
 	DropoffLocation *AddressData `json:"dropoffLocation"`
@@ -261,9 +260,9 @@ func getAddressObject(s string) AddressData {
 // MARK: Time Parsing
 
 type TimeData struct {
-	TimePrecise     string `json:"timePrecise"`
-	TimeRange 		string `json:"timeRange"`
-	Date            string `json:"date"`
+	TimePrecise string `json:"timePrecise"`
+	TimeRange   string `json:"timeRange"`
+	Date        string `json:"date"`
 }
 
 func getTimeObject(message string, postTime string) TimeData {
@@ -278,16 +277,16 @@ func getTimeObject(message string, postTime string) TimeData {
 	for key, value := range monthMap {
 		if strings.Contains(upperMessage, key) {
 			pattern, _ := regexp.Compile("[0-9]+")
-			day := pattern.FindString(upperMessage[strings.Index(upperMessage,key):])
+			day := pattern.FindString(upperMessage[strings.Index(upperMessage, key):])
 			if len(day) != 2 {
-				day = "0"+day
+				day = "0" + day
 			}
 			dateFromPost = currDate[0:4] + "-" + value + "-" + day
 		}
 	}
 
 	pattern, _ := regexp.Compile("[0-9]+.*?(AM|PM)")
-	allFoundTime := pattern.FindAllString(upperMessage, 2)	
+	allFoundTime := pattern.FindAllString(upperMessage, 2)
 	if len(allFoundTime) == 2 {
 		timeDescription = allFoundTime[0] + " to " + allFoundTime[1]
 	} else if len(allFoundTime) == 1 {
@@ -296,18 +295,18 @@ func getTimeObject(message string, postTime string) TimeData {
 
 	if len(dateFromPost) == 0 {
 		dateFromPost = couldNotParse
-	} 
+	}
 	if len(timePrecise) == 0 {
 		timePrecise = couldNotParse
 	}
 	if len(timeDescription) == 0 {
 		timeDescription = couldNotParse
 	}
-	
+
 	return TimeData{
-		TimePrecise:     timePrecise,
-		TimeRange: 		 timeDescription,
-		Date:            dateFromPost,
+		TimePrecise: timePrecise,
+		TimeRange:   timeDescription,
+		Date:        dateFromPost,
 	}
 }
 
@@ -320,28 +319,4 @@ func contains(s []string, e string) bool {
 		}
 	}
 	return false
-}
-
-func main() {
-	//sampleJson1 := []byte(`{"id":"id1", "username":"Brendan Zhang", "message":"Looking for ride to Union/Finch from Waterloo bk on Sunday (10th) after 4pm.", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
-	//sampleJson2 := []byte(`{"id":"id2", "username":"Daniell Yang", "message":"Looking for a ride from Brampton to Waterloo on 10th March (Sunday).", "updatedTime":"2018-02-31T05:33:31+0000"}`)
-	 sampleJson3 := []byte(`{"id":"id3", "username":"Bimesh DeSilva", "message":"Driving London -> Waterloo @ 1 pm on Sunday March 10th, $20", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
-	//sampleJson4 := []byte(`{"id":"id4", "username":"Max Gao", "message":"driving richmond hill freshco plaza to waterloo bk plaza at 1pm sunday march 10, no middle seat, taking 407, $20 a seat", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
-	//shitpost := []byte(`{"id":"id5", "username":"shitposter", "message":"Shitpost", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
-
-	locName := "Waterloo BK"
-
-	time := "This afternoon"
-	timeContext := "04/13/2019"
-
-	ad := getAddressObject(locName)
-	fmt.Printf("Long: %s\nLat: %s\nCity name: %s\nLong name: %s\n", ad.Lng, ad.Lat, ad.City, ad.FormattedAddress)
-
-	fmt.Println()
-
-	tm := getTimeObject(time, timeContext)
-	fmt.Printf("TimePrecise: %s\nTimeRange: %s\nDate: %s\n", tm.TimePrecise, tm.TimeRange, tm.Date)
-
-	fmt.Printf("\nResults from parsing:\n")
-	parseJson(sampleJson3)
 }
