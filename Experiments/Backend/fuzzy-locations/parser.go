@@ -95,6 +95,7 @@ func parseMessage(id string, username string, message string, updatedTime string
 	}
 }
 
+//no longer needed, maybe just use for testing example posts
 func parseJson(post []byte) {
 	var parsePost Post
 	err := json.Unmarshal(post, &parsePost)
@@ -108,8 +109,8 @@ func main() {
 
 	//sampleJson1 := []byte(`{"id":"id1", "username":"Brendan Zhang", "message":"Looking for ride to Union/Finch from Waterloo bk on Sunday (10th) after 4pm.", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 	//sampleJson2 := []byte(`{"id":"id2", "username":"Daniell Yang", "message":"Looking for a ride from Brampton to Waterloo on 10th March (Sunday).", "updatedTime":"2018-02-31T05:33:31+0000"}`)
-	sampleJson3 := []byte(`{"id":"id3", "username":"Bimesh DeSilva", "message":"Driving London -> Waterloo @ 1 pm on Sunday March 10th, $20", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
-	//sampleJson4 := []byte(`{"id":"id4", "username":"Max Gao", "message":"driving richmond hill freshco plaza to waterloo bk plaza at 1pm sunday march 10, no middle seat, taking 407, $20 a seat", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+	//sampleJson3 := []byte(`{"id":"id3", "username":"Bimesh DeSilva", "message":"Driving London -> Waterloo @ 1 pm on Sunday March 10th, $20", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
+	sampleJson4 := []byte(`{"id":"id4", "username":"Max Gao", "message":"driving richmond hill freshco plaza to waterloo bk plaza at 1pm sunday march 10, no middle seat, taking 407, $20 a seat", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 	//shitpost := []byte(`{"id":"id5", "username":"shitposter", "message":"Shitpost", "updatedTime" : "2018-02-31T05:33:31+0000"}`)
 
 	locName := "Waterloo BK"
@@ -126,7 +127,7 @@ func main() {
 	fmt.Printf("TimePrecise: %s\nTimeRange: %s\nDate: %s\n", tm.TimePrecise, tm.TimeRange, tm.Date)
 
 	fmt.Printf("\nResults from parsing:\n")
-	parseJson(sampleJson3)
+	parseJson(sampleJson4)
 
 	lambda.Start(handleEvent)
 }
