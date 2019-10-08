@@ -1,2 +1,1 @@
-# RideSaP
-Five Guys burgers and fries.
+Ridesharing platform populated with data from the Facebook UWaterloo Ridesharing group.
